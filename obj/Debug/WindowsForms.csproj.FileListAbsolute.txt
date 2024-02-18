@@ -1,0 +1,9 @@
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\bin\Debug\WindowsForms.exe.config
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\bin\Debug\WindowsForms.exe
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\bin\Debug\WindowsForms.pdb
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.csprojAssemblyReference.cache
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.Form1.resources
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.Properties.Resources.resources
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.csproj.GenerateResource.cache
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.exe
+C:\Users\布施大悟\Desktop\work\cs_winForn\WindowsForms\obj\Debug\WindowsForms.pdb
