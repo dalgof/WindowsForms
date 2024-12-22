@@ -33,7 +33,6 @@ namespace WindowsForms
         /// ヘッダチェックボックス
         /// </summary>
         private CheckBox HeaderCheckBox = new CheckBox();
-
         public Form1()
         {
             InitializeComponent();
@@ -59,9 +58,19 @@ namespace WindowsForms
             // 1列目をチェックボックス、2列目をテキストとします。
             dataGridView1.Columns.Add(new DataGridViewCheckBoxColumn());
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn());
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn());
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn());
 
-            // 2列目のヘッダテキストを設定します。
-            dataGridView1.Columns[1].HeaderText = "名前";
+            // ヘッダテキスト
+            dataGridView1.Columns[1].HeaderText = "列2";
+            dataGridView1.Columns[2].HeaderText = "列3";
+            dataGridView1.Columns[3].HeaderText = "列4";
+
+
+            dataGridView1.Columns[0].FillWeight = 10;
+            dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dataGridView1.Columns[1].FillWeight = 30;
+
 
             // データを設定します。
             dataGridView1.Rows.Add(false, "Apple");
@@ -73,20 +82,26 @@ namespace WindowsForms
 
             dataGridView1.AllowUserToResizeRows = false;
 
+            // 複数行、セル結合
+            //dataGridView1.CellPainting += dataGridView1_CellPainting;
+            dataGridView1.CellPainting += dataGridView1_CellPainting2;
+            //dataGridView1.CellPainting += *dataGridView1_CellPainting3;
 
             // ヘッダチェックボックスを設定します。
             HeaderCheckBox.Name = "HeaderCheckbox";
-            HeaderCheckBox.Size = new Size(CheckBoxWidth, CheckBoxHeight);
-            HeaderCheckBox.CheckedChanged += new EventHandler(HeaderCheckbox_CheckedChanged);
-            dataGridView1.Controls.Add(HeaderCheckBox);
-            dataGridView1.Columns[0].HeaderText = "全選択";
-            dataGridView1.Columns[0].HeaderCell.Style.Padding = new Padding(15,0,0,0);
-            //dataGridView1.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            //dataGridView1.Columns[0].DefaultCellStyle.Padding = new Padding(1, 0, 0, 0);
+            /*            HeaderCheckBox.Size = new Size(CheckBoxWidth, CheckBoxHeight);
+                        HeaderCheckBox.CheckedChanged += new EventHandler(HeaderCheckbox_CheckedChanged);
+                        dataGridView1.Controls.Add(HeaderCheckBox);
+                        dataGridView1.Columns[0].HeaderText = "全選択";
+                        dataGridView1.Columns[0].HeaderCell.Style.Padding = new Padding(15,0,0,0);
+            */            //dataGridView1.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                          //dataGridView1.Columns[0].DefaultCellStyle.Padding = new Padding(1, 0, 0, 0);
 
             // ヘッダチェックボックスの位置を設定します。
-            SetHeaderCheckBoxLocation();
+            //SetHeaderCheckBoxLocation();
 
+            this.dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridView1.MultiSelect = false;
         }
 
         /// <summary>
@@ -158,10 +173,11 @@ namespace WindowsForms
                 using (var ms = new MemoryStream())
                 using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
                 {
-                    foreach(var data in aes.IV){
+                    foreach (var data in aes.IV)
+                    {
                         ms.WriteByte(data);
                     }
-                    
+
                     using (var sw = new StreamWriter(cs))
                     {
                         sw.Write(plainText);
@@ -197,6 +213,140 @@ namespace WindowsForms
             }
         }
 
+
+
+        private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            //ヘッダー行以外はスキップ
+            if(e.RowIndex != -1)
+            {
+                return;
+            }
+
+            //2-3列目のヘッダーを2行にする
+            //if(e.ColumnIndex == 1 || e.ColumnIndex == 2)
+            //{
+            //    // 既存の描画を無効
+            //    e.Paint(e.CellBounds, DataGridViewPaintParts.None);
+            //    e.Handled = true;
+            //}
+
+            //描画領域の取得
+            var rect = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            rect.Width -= 1;
+            rect.Height -= 1;
+
+            //背景塗りつぶし
+            e.Graphics.FillRectangle(new SolidBrush(dataGridView1.ColumnHeadersDefaultCellStyle.BackColor), rect);
+            //外枠描画
+            e.Graphics.DrawRectangle(new Pen(dataGridView1.GridColor), rect);
+            var separatedHeight = rect.Height / 2;
+            //分割線を描画
+            for(int i = 0; i<2; i++)
+            {
+                if (i == 0)
+                {
+                    continue;
+
+                }
+                else
+                {
+                    e.Graphics.DrawLine(
+                        new Pen(SystemColors.ControlDark),
+                        rect.Left,
+                        rect.Top + separatedHeight * i,
+                        rect.Right,
+                        rect.Top + separatedHeight * i);
+                }
+            }
+
+
+        }
+
+        private void dataGridView1_CellPainting2(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            //ヘッダー行以外はスキップ
+            if (e.RowIndex != -1)
+            {
+                return;
+            }
+
+            //セルの矩形を取得
+            Rectangle joinRect = new Rectangle();
+
+            //2-3列目の1行目のヘッダーセルを結合
+            if (e.ColumnIndex == 1)
+            {
+                //セルの矩形を取得
+                joinRect = e.CellBounds;
+
+                //3列目の幅を取得し2列目の幅に足す
+                joinRect.Width += dataGridView1.Columns[2].Width;
+                joinRect.Height = joinRect.Height / 2;
+
+                //矩形の位置を補正
+                joinRect.Y -= 1;
+
+
+                //e.Graphics.FillRectangle(new SolidBrush(dataGridView1.ColumnHeadersDefaultCellStyle.BackColor), joinRect);
+
+                e.Graphics.DrawRectangle(new Pen(dataGridView1.GridColor), joinRect);
+
+            }
+
+            if(e.ColumnIndex == 1 || e.ColumnIndex == 2)
+            {
+                for(int i= 0; i<2; i++)
+                {
+                    Rectangle nomalRect = e.CellBounds;
+
+                    nomalRect.Height = joinRect.Height;
+                    nomalRect.Width = dataGridView1.Rows[1].Cells[i + 1].ContentBounds.Width;
+                    //nomalRect.Width += nomalRect.Width;
+                    nomalRect.X +=nomalRect.Width;
+                    nomalRect.Y += joinRect.Height - 1;
+
+                    e.Graphics.FillRectangle(new SolidBrush(SystemColors.ControlDark), nomalRect);
+
+                    e.Graphics.DrawRectangle(new Pen(dataGridView1.GridColor), nomalRect);
+                }
+                
+            }
+
+            // 結合セル以外は既定の描画を行う
+            if (!(e.ColumnIndex == 1 || e.ColumnIndex == 2))
+            {
+                e.Paint(e.ClipBounds, e.PaintParts);
+            }
+
+            // イベントハンドラ内で処理を行ったことを通知
+            e.Handled = true;
+        }
+
+
+        private void dataGridView1_CellPainting3(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex != -1) return;
+
+            if (e.ColumnIndex == 2)
+            {
+                e.AdvancedBorderStyle.Bottom = DataGridViewAdvancedCellBorderStyle.None;
+            }
+
+            if (e.ColumnIndex >= 2)
+            {
+                e.AdvancedBorderStyle.Left = DataGridViewAdvancedCellBorderStyle.None;
+                e.AdvancedBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.None;
+
+                if (e.ColumnIndex < dataGridView1.Columns.Count - 1 &&
+                    Convert.ToString(dataGridView1.Rows[0].Cells[e.ColumnIndex + 1].Value) != "")
+                {
+                    e.AdvancedBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.Single;
+                }
+
+            }
+        }
+
     }
+
 }
-        
